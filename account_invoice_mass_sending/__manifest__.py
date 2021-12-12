@@ -16,5 +16,8 @@
         "queue_job",
         "web_notify",
     ],
-    "data": ["views/account_invoice_views.xml"],
+    "data": [
+        "views/account_invoice_views.xml",
+        "wizard/mass_send_print.xml",
+    ],
 }
