@@ -7,12 +7,12 @@ def migrate(env, version):
     openupgrade.convert_to_company_dependent(
         env=env,
         model_name="res.partner",
-        origin_field_name="customer_invoice_transmit_method_id",
+        origin_field_name="customer_invoice_transmit_method_id_temp",
         destination_field_name="customer_invoice_transmit_method_id",
     )
     openupgrade.convert_to_company_dependent(
         env=env,
         model_name="res.partner",
-        origin_field_name="supplier_invoice_transmit_method_id",
+        origin_field_name="supplier_invoice_transmit_method_id_temp",
         destination_field_name="supplier_invoice_transmit_method_id",
     )
