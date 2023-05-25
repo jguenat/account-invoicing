@@ -340,6 +340,9 @@ class StockInvoiceOnshipping(models.TransientModel):
         """
         invoice = self.env["account.move"].new(values.copy())
         invoice._onchange_partner_id()
+        invoice._inverse_company_id()
+        invoice._inverse_currency_id()
+        invoice._onchange_date()
         new_values = invoice._convert_to_write(invoice._cache)
         # Ensure basic values are not updated
         values.update(new_values)
@@ -410,7 +413,10 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return: dict
         """
         line = self.env["account.move.line"].new(values.copy())
-        line._onchange_product_id()
+        line._inverse_partner_id()
+        line._inverse_product_id()
+        line._inverse_account_id()
+        line._inverse_amount_currency()
         new_values = line._convert_to_write(line._cache)
         if price_unit:
             new_values["price_unit"] = price_unit
@@ -446,7 +452,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             elif inv_type == "in_refund" and loc.usage == "supplier":
                 qty *= -1
             quantity += qty
-            move_line_ids.append((4, move.id, False))
+            move_line_ids.append((4, move.id))
         price = moves._get_price_unit_invoice(inv_type, partner_id, quantity)
         line_obj = self.env["account.move.line"]
         values = line_obj.default_get(line_obj.fields_get().keys())
@@ -518,12 +524,7 @@ class StockInvoiceOnshipping(models.TransientModel):
                 if line_values:  # Only create the invoice if it has lines
                     invoice_values["invoice_line_ids"] = lines
                     invoice_values["invoice_date"] = self.invoice_date
-                    # this is needed otherwise invoice_line_ids are removed
-                    # in _move_autocomplete_invoice_lines_create
-                    # and no invoice line is created
-                    invoice_values.pop("line_ids")
                     invoice = self._create_invoice(invoice_values)
-                    invoice._onchange_invoice_line_ids()
                     invoice._compute_amount()
                     invoices |= invoice
         return invoices
