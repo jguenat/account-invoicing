@@ -839,7 +839,7 @@ class TestPickingInvoicing(TransactionCase):
         )
 
         self.assertEqual(picking_devolution.invoice_state, "2binvoiced")
-        for line in picking_devolution.move_lines:
+        for line in picking_devolution.move_ids:
             self.assertEqual(line.invoice_state, "2binvoiced")
 
         picking_devolution.action_confirm()
@@ -917,7 +917,7 @@ class TestPickingInvoicing(TransactionCase):
         )
 
         self.assertEqual(picking_devolution.invoice_state, "2binvoiced")
-        for line in picking_devolution.move_lines:
+        for line in picking_devolution.move_ids:
             self.assertEqual(line.invoice_state, "2binvoiced")
 
         picking_devolution.action_confirm()

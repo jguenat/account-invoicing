@@ -17,8 +17,10 @@ INVOICE_TYPE_MAP = {
     # Picking Type Code | Local Origin Usage | Local Dest Usage
     ("outgoing", "internal", "customer"): "out_invoice",
     ("incoming", "customer", "internal"): "out_refund",
+    ("incoming", "customer", "customer"): "out_refund",
     ("incoming", "supplier", "internal"): "in_invoice",
     ("outgoing", "internal", "supplier"): "in_refund",
+    ("outgoing", "internal", "internal"): "in_refund",
     ("incoming", "transit", "internal"): "in_invoice",
     ("outgoing", "transit", "supplier"): "in_refund",
     ("outgoing", "transit", "customer"): "out_invoice",
@@ -36,10 +38,10 @@ class StockInvoiceOnshipping(models.TransientModel):
             active_ids = active_ids[0]
         pick_obj = self.env["stock.picking"]
         picking = pick_obj.browse(active_ids)
-        if not picking or not picking.move_lines:
+        if not picking or not picking.move_ids:
             return "sale"
         pick_type_code = picking.picking_type_id.code
-        line = fields.first(picking.move_lines)
+        line = fields.first(picking.move_ids)
         if pick_type_code == "incoming":
             usage = line.location_id.usage
         else:
@@ -111,7 +113,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         pickings = pickings.filtered(
             lambda x: x.picking_type_id.code == picking_type and x.partner_id == partner
         )
-        lines = pickings.mapped("move_lines")
+        lines = pickings.mapped("move_ids")
         if picking_type == "outgoing":
             moves = lines.filtered(lambda x: x.location_dest_id.usage == usage)
         else:
@@ -172,19 +174,19 @@ class StockInvoiceOnshipping(models.TransientModel):
         first = fields.first
         sale_pickings = pickings.filtered(
             lambda x: x.picking_type_id.code == "outgoing"
-            and first(x.move_lines).location_dest_id.usage == "customer"
+            and first(x.move_ids).location_dest_id.usage == "customer"
         )
         sale_refund_pickings = pickings.filtered(
             lambda x: x.picking_type_id.code == "incoming"
-            and first(x.move_lines).location_id.usage == "customer"
+            and first(x.move_ids).location_id.usage == "customer"
         )
         purchase_pickings = pickings.filtered(
             lambda x: x.picking_type_id.code == "incoming"
-            and first(x.move_lines).location_id.usage == "supplier"
+            and first(x.move_ids).location_id.usage == "supplier"
         )
         purchase_refund_pickings = pickings.filtered(
             lambda x: x.picking_type_id.code == "outgoing"
-            and first(x.move_lines).location_dest_id.usage == "supplier"
+            and first(x.move_ids).location_dest_id.usage == "supplier"
         )
 
         return (
@@ -498,7 +500,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         pick_list = self._group_pickings(pickings)
         invoices = self.env["account.move"].browse()
         for pickings in pick_list:
-            moves = pickings.mapped("move_lines")
+            moves = pickings.mapped("move_ids")
             grouped_moves_list = self._group_moves(moves)
             parts = self.ungroup_moves(grouped_moves_list)
             for moves_list in parts:
