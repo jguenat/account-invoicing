@@ -373,7 +373,6 @@ class StockInvoiceOnshipping(models.TransientModel):
                 "move_type": inv_type,
                 "currency_id": currency.id,
                 "journal_id": journal.id,
-                "picking_ids": [(4, p.id, False) for p in pickings],
             }
         )
 
