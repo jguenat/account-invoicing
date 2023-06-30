@@ -22,7 +22,7 @@ class StockMove(models.Model):
         product = self.mapped("product_id")
         product.ensure_one()
         if inv_type in ("in_invoice", "in_refund"):
-            result = product.price
+            result = product.standard_price
         else:
             # If partner given, search price in its sale pricelist
             if partner and partner.property_product_pricelist:
@@ -32,7 +32,7 @@ class StockMove(models.Model):
                     pricelist=partner.property_product_pricelist.id,
                     uom=fields.first(self).product_uom.id,
                 )
-                result = product.price
+                result = product.lst_price
             else:
                 result = product.lst_price
         return result
