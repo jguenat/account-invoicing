@@ -522,6 +522,11 @@ class StockInvoiceOnshipping(models.TransientModel):
                         lines.append((0, 0, line_values))
                 if line_values:  # Only create the invoice if it has lines
                     invoice_values["invoice_line_ids"] = lines
+                    # Necessary inform line_ids with empty list to avoid error
+                    # addons/account/models/account_move.py", line 2251,
+                    # in _sanitize_vals
+                    # assert command not in (Command.SET, Command.CLEAR)
+                    invoice_values["line_ids"] = []
                     invoice_values["invoice_date"] = self.invoice_date
                     invoice = self._create_invoice(invoice_values)
                     invoice._compute_amount()
